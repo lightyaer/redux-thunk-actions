@@ -1,5 +1,8 @@
-redux-thunk-actions
+@lightyaer/redux-thunk-actions
 ===================
+
+This is a fork of [redux-thunk-actions](https://www.npmjs.com/package/redux-thunk-actions)
+with custom suffix for action names.
 
 Easily create `action creators` for redux with redux-thunk.
 
