@@ -1,6 +1,6 @@
 {
   "name": "@lightyaer/redux-thunk-actions",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "private": false,
   "main": "lib/index.js",
