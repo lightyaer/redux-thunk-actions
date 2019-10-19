@@ -38,15 +38,25 @@ dispatch(myFetch());
 With redux-thunk-actions, you can do:
 
 ```js
-let myFetch = createActionThunk('MY_FETCH', () => api.fetch());
+let myFetch = createActionThunk('entity/fetch', () => api.fetch());
 ```
 
 This will generate two of three possible actions:
 
-- MY_FETCH_STARTED
-- MY_FETCH_SUCCEEDED
-- MY_FETCH_FAILED
-- MY_FETCH_ENDED
+- entity/fetch/started
+- entity/fetch/succeeded
+- entity/fetch/failed
+- entity/fetch/ended
+
+You can customize suffix by passing suffix as last argument
+```js
+let myFetch = createActionThunk('entity/fetch', () => api.fetch(), null, {
+  STARTED: '/started',
+  SUCCEEDED: '/succeeded',
+  FAILED: '/failed',
+  ENDED: '/ended',
+});
+```
 
 You can pass both sync and async functions and the actions will be
 dispatched accordingly.
