@@ -5,6 +5,13 @@ import { createStore, applyMiddleware } from 'redux';
 import thunkMiddleware from 'redux-thunk';
 import configureMockStore from 'redux-mock-store';
 import { createActionThunk } from '../src';
+import chai from 'chai';
+import spies from 'chai-spies';
+import { createAction } from 'redux-actions';
+
+chai.use(spies);
+const should = chai.should();
+const expect = chai.expect;
 
 const reducer = (
   state = { started: false, data: null, error: null },
@@ -12,21 +19,21 @@ const reducer = (
 ) => {
   console.log(action.type, action.payload, action.error); //eslint-disable-line
   switch (action.type) {
-    case 'FETCHStarted':
+    case 'fetchStarted':
       return Object.assign({}, state, {
         started: true,
         error: null,
         data: null
       });
-    case 'FETCHFailed':
+    case 'fetchFailed':
       return Object.assign({}, state, {
         error: action.error
       });
-    case 'FETCHSucceeded':
+    case 'fetchSucceeded':
       return Object.assign({}, state, {
         data: action.payload
       });
-    case 'FETCHEnded':
+    case 'fetchEnded':
       return Object.assign({}, state, {
         started: false
       });
@@ -45,19 +52,19 @@ describe('createActionThunk', () => {
   });
 
   it('should dispatch non async functions', function() {
-    let fetch = createActionThunk('FETCH', () => 3);
+    let fetch = createActionThunk('fetch', () => 3);
     this.store.dispatch(fetch());
     assert.equal(this.store.getState().data, 3);
   });
 
   it('should dispatch and return payload with non async functions', function() {
-    let fetch = createActionThunk('FETCH', () => 2);
+    let fetch = createActionThunk('fetch', () => 2);
     let result = this.store.dispatch(fetch());
     assert.equal(result, 2);
   });
 
   it('should dispatch async function', function(done) {
-    let fetch = createActionThunk('FETCH', myAsyncFunc);
+    let fetch = createActionThunk('fetch', myAsyncFunc);
     let promise = this.store.dispatch(fetch());
     assert.equal(this.store.getState().started, true);
     assert.equal(this.store.getState().data, null);
@@ -69,8 +76,80 @@ describe('createActionThunk', () => {
     }, done);
   });
 
+  it('should test the extraActions', function(done) {
+    const payloadCreator = (payload) => payload;
+    const chaiSpy = chai.spy(payloadCreator);
+    let fetch = createActionThunk('fetch', myAsyncFunc, null, undefined, {
+      started: [createAction('started', chaiSpy)],
+      succeeded: [createAction('succeeded', chaiSpy)],
+      failed: [createAction('failed', chaiSpy)],
+      ended: [createAction('ended', chaiSpy)]
+    });
+
+    let promise = this.store.dispatch(fetch());
+    assert.equal(this.store.getState().started, true);
+    assert.equal(this.store.getState().data, null);
+    promise.then(data => {
+      assert.equal(this.store.getState().started, false);
+      assert.equal(this.store.getState().data, 10);
+      assert.equal(data, 10);
+      chaiSpy.should.have.been.first.called.with({
+        type: 'fetch',
+        hook: 'started'
+      });
+
+      chaiSpy.should.have.been.second.called.with({
+        type: 'fetch',
+        hook: 'succeeded',
+        data: 10
+      });
+
+      chaiSpy.should.have.been.third.called.with({
+        type: 'fetch',
+        hook: 'ended'
+      });
+      done();
+    }, done);
+
+  });
+
+  it('should test the extraActions with Error', function() {
+    const payloadCreator = (payload) => payload;
+    const chaiSpy = chai.spy(payloadCreator);
+    let fetch = createActionThunk('fetch', () => {
+      throw new Error('boom!');
+    }, null, undefined, {
+      started: [createAction('started', chaiSpy)],
+      succeeded: [createAction('succeeded', chaiSpy)],
+      failed: [createAction('failed', chaiSpy)],
+      ended: [createAction('ended', chaiSpy)]
+    });
+    try {
+      this.store.dispatch(fetch());
+    } catch (e) {
+      assert.equal(e.message, 'boom!');
+      assert.equal(this.store.getState().started, false);
+      assert.equal(this.store.getState().error, true);
+      chaiSpy.should.have.been.first.called.with({
+        type: 'fetch',
+        hook: 'started'
+      });
+
+      chaiSpy.should.have.been.second.called.with({
+        type: 'fetch',
+        hook: 'failed',
+        err: new Error('boom!')
+      });
+
+      chaiSpy.should.have.been.third.called.with({
+        type: 'fetch',
+        hook: 'ended'
+      });
+    }
+  });
+
   it('should dispatch FAILED, then ERROR and then throw on error', function() {
-    let fetch = createActionThunk('FETCH', () => {
+    let fetch = createActionThunk('fetch', () => {
       throw new Error('boom!');
     });
     try {
@@ -87,7 +166,7 @@ describe('createActionThunk', () => {
     const mockStore = configureMockStore(middlewares);
     const store = mockStore({});
 
-    let fetch = createActionThunk('FETCH', () => {});
+    let fetch = createActionThunk('fetch', () => {});
     store.dispatch(fetch());
 
     const actions = store.getActions();
@@ -110,7 +189,7 @@ describe('createActionThunk', () => {
     });
 
     it('should dispatch action with meta', () => {
-      let fetch = createActionThunk('FETCH', () => ({ payload: 2, meta: 3 }));
+      let fetch = createActionThunk('fetch', () => ({ payload: 2, meta: 3 }));
       this.store.dispatch(fetch(1));
 
       const actions = this.store.getActions();
