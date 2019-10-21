@@ -1,6 +1,5 @@
 import { createAction } from 'redux-actions';
-import { every, isArray } from 'lodash';
-import { suffixDefaults, extraActionDefaults } from './defaults';
+import { each, isArray } from 'lodash';
 
 /**
  * Creates an async action creator
@@ -12,17 +11,24 @@ import { suffixDefaults, extraActionDefaults } from './defaults';
  * @return {Funtion}                     the action creator
  */
 
+export const suffixDefaults = {
+  STARTED: 'Started',
+  SUCCEEDED: 'Succeeded',
+  FAILED: 'Failed',
+  ENDED: 'Ended'
+};
+
 const isPromise = p => {
   return p && p.then && p.catch;
 };
 
-export const createActionThunk = (
+export const createActionThunk = ({
   type,
   fn,
   suppressException,
   suffix = suffixDefaults,
-  extraActions = extraActionDefaults
-) => {
+  extraActions = {}
+}) => {
   const TYPE_STARTED = `${type}${suffix.STARTED}`;
   const TYPE_SUCCEEDED = `${type}${suffix.SUCCEEDED}`;
   const TYPE_FAILED = `${type}${suffix.FAILED}`;
@@ -35,19 +41,19 @@ export const createActionThunk = (
     [TYPE_ENDED]: createAction(TYPE_ENDED)
   };
 
-  if(!isArray(extraActions.started)) {
+  if (extraActions.started && !isArray(extraActions.started)) {
     extraActions.started = [extraActions.started];
   }
 
-  if(!isArray(extraActions.succeeded)) {
+  if (extraActions.succeeded && !isArray(extraActions.succeeded)) {
     extraActions.succeeded = [extraActions.succeeded];
   }
 
-  if(!isArray(extraActions.failed)) {
+  if (extraActions.failed && !isArray(extraActions.failed)) {
     extraActions.failed = [extraActions.failed];
   }
 
-  if(!isArray(extraActions.ended)) {
+  if (extraActions.ended && !isArray(extraActions.ended)) {
     extraActions.ended = [extraActions.ended];
   }
 
@@ -62,7 +68,8 @@ export const createActionThunk = (
     let startedAt = new Date().getTime();
     dispatch(actionCreators[TYPE_STARTED](args));
 
-    every(extraActions.started, action => {
+    console.log(extraActions);
+    each(extraActions.started, action => {
       dispatch(
         action({
           type,
@@ -71,7 +78,6 @@ export const createActionThunk = (
       );
     });
 
-
     const succeeded = data => {
       const action =
         data && data.payload
@@ -79,7 +85,7 @@ export const createActionThunk = (
           : actionCreators[TYPE_SUCCEEDED](data);
 
       dispatch(action);
-      every(extraActions.succeeded, action => {
+      each(extraActions.succeeded, action => {
         dispatch(
           action({
             type,
@@ -92,10 +98,12 @@ export const createActionThunk = (
       let endedAt = new Date().getTime();
       const elapsed = endedAt - startedAt;
 
-      dispatch(actionCreators[TYPE_ENDED]({
-        elapsed
-      }));
-      every(extraActions.ended, action => {
+      dispatch(
+        actionCreators[TYPE_ENDED]({
+          elapsed
+        })
+      );
+      each(extraActions.ended, action => {
         dispatch(
           action({
             type,
@@ -110,7 +118,7 @@ export const createActionThunk = (
       const elapsed = endedAt - startedAt;
       dispatch(actionCreators[TYPE_FAILED](err));
 
-      every(extraActions.failed, action => {
+      each(extraActions.failed, action => {
         dispatch(
           action({
             type,
@@ -126,7 +134,7 @@ export const createActionThunk = (
         })
       );
 
-      every(extraActions.ended, action => {
+      each(extraActions.ended, action => {
         dispatch(
           action({
             type,
