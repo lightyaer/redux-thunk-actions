@@ -47,7 +47,6 @@ describe('createActionThunk', () => {
   it('should dispatch non async functions', function() {
     let fetch = createActionThunk('FETCH', () => 3);
     this.store.dispatch(fetch());
-    console.log('1st fn data', this.store.getState().data);
     assert.equal(this.store.getState().data, 3);
   });
 

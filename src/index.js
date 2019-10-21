@@ -11,10 +11,10 @@ import { createAction } from 'redux-actions';
  */
 
 const suffixDefaults = {
-  STARTED: '/started',
-  SUCCEEDED: '/succeeded',
-  FAILED: '/failed',
-  ENDED: '/ended'
+  STARTED: 'Started',
+  SUCCEEDED: 'Succeeded',
+  FAILED: 'Failed',
+  ENDED: 'Ended'
 };
 
 const isPromise = (p) => {
@@ -84,6 +84,7 @@ export const createActionThunk = (type, fn, suppressException, suffix = suffixDe
   };
 
   factory.NAME = type;
+  factory.toString = () => type;
   factory.START = actionCreators[TYPE_STARTED].toString();
   factory.STARTED = factory.START;
   factory.SUCCEEDED = actionCreators[TYPE_SUCCEEDED].toString();
