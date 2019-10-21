@@ -12,21 +12,21 @@ const reducer = (
 ) => {
   console.log(action.type, action.payload, action.error); //eslint-disable-line
   switch (action.type) {
-    case 'FETCH/started':
+    case 'FETCHStarted':
       return Object.assign({}, state, {
         started: true,
         error: null,
         data: null
       });
-    case 'FETCH/failed':
+    case 'FETCHFailed':
       return Object.assign({}, state, {
         error: action.error
       });
-    case 'FETCH/succeeded':
+    case 'FETCHSucceeded':
       return Object.assign({}, state, {
         data: action.payload
       });
-    case 'FETCH/ended':
+    case 'FETCHEnded':
       return Object.assign({}, state, {
         started: false
       });
