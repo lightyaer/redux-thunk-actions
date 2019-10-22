@@ -27,7 +27,7 @@ const reducer = (
       });
     case 'fetchFailed':
       return Object.assign({}, state, {
-        error: action.error
+        error: action.payload
       });
     case 'fetchSucceeded':
       return Object.assign({}, state, {
@@ -168,8 +168,6 @@ describe('createActionThunk', () => {
       fn: () => {
         throw new Error('boom!');
       },
-      suppressException: null,
-      suffix: undefined,
       extraActions: {
         started: [createAction('started', chaiSpy)],
         succeeded: [createAction('succeeded', chaiSpy)],
@@ -182,7 +180,7 @@ describe('createActionThunk', () => {
     } catch (e) {
       assert.equal(e.message, 'boom!');
       assert.equal(this.store.getState().started, false);
-      assert.equal(this.store.getState().error, true);
+      assert.equal(this.store.getState().error, 'boom!');
       chaiSpy.should.have.been.first.called.with({
         type: 'fetch',
         hook: 'started'
@@ -191,7 +189,7 @@ describe('createActionThunk', () => {
       chaiSpy.should.have.been.second.called.with({
         type: 'fetch',
         hook: 'failed',
-        err: new Error('boom!')
+        err: 'boom!'
       });
 
       chaiSpy.should.have.been.third.called.with({
@@ -213,7 +211,7 @@ describe('createActionThunk', () => {
     } catch (e) {
       assert.equal(e.message, 'boom!');
       assert.equal(this.store.getState().started, false);
-      assert.equal(this.store.getState().error, true);
+      assert.equal(this.store.getState().error, 'boom!');
     }
   });
 

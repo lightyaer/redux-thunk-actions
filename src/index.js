@@ -116,14 +116,14 @@ export const createActionThunk = ({
     const failed = err => {
       let endedAt = new Date().getTime();
       const elapsed = endedAt - startedAt;
-      dispatch(actionCreators[TYPE_FAILED](err));
+      dispatch(actionCreators[TYPE_FAILED](err.message));
 
       each(extraActions.failed, action => {
         dispatch(
           action({
             type,
             hook: 'failed',
-            err
+            err: err.message
           })
         );
       });
