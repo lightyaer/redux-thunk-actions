@@ -10,8 +10,8 @@ import spies from 'chai-spies';
 import { createAction } from 'redux-actions';
 
 chai.use(spies);
-const should = chai.should();
-const expect = chai.expect;
+chai.should();
+
 
 const reducer = (
   state = { started: false, data: null, error: null },
