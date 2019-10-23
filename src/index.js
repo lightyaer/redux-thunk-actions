@@ -68,7 +68,6 @@ export const createActionThunk = ({
     let startedAt = new Date().getTime();
     dispatch(actionCreators[TYPE_STARTED](args));
 
-    console.log(extraActions);
     each(extraActions.started, action => {
       dispatch(
         action({
